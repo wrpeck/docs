@@ -8,12 +8,12 @@ permissions:
   id-token: write
   contents: read
 jobs:
-  build:
-    name: Build
+  precheck:
+    name: Precheck
     runs-on: ubuntu-latest
-    # We run tests only if it's:
-    #   1) pull request not from a fork (ie. internal PR), or
-    #   2) pull request from a fork (ie. external PR) that was added "run-tests" label
+      # We run tests only if it's:
+      #   1) pull request not from a fork (ie. internal PR), or
+      #   2) pull request from a fork (ie. external PR) that was added "run-tests" label
     if: |
       (github.event.pull_request.head.repo.full_name == github.repository) ||
       (github.event.action == 'labeled' && github.event.label.name == 'run-tests')
@@ -27,6 +27,11 @@ jobs:
             const { issue: { number: issue_number }, repo: { owner, repo } } = context;
             const label = 'run-tests';
             github.issues.removeLabel({ owner, repo, issue_number, name: label });
+  build:
+    name: Build
+    needs: precheck
+    runs-on: ubuntu-latest
+    steps:
       - name: Checkout Repo
         uses: actions/checkout@main
         with:
